@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import re
+from collections import defaultdict
 from typing import Optional, Iterable
 
 # Guesses: word first, then five letters: y (yellow) or g (green).
@@ -11,13 +12,18 @@ GUESSES = [
   '___y_',
 ]
 
+def isvalid(word: str) -> bool:
+  return len(word) == 5 and word.isalpha() and word.islower()
+
 assert(all(len(g) == 5 for g in GUESSES))
+assert(all(map(isvalid, GUESSES[::2])))
 assert(len(GUESSES) % 2 == 0)
+
 
 def load_dictionary() -> Iterable[str]:
   with open('/usr/share/dict/words') as f:
     for word in (l.strip() for l in f):
-      if len(word) == 5 and word.islower() and word.isalpha():
+      if isvalid(word):
         yield word
 
 def print_possible_matches(guesses: list[str], dictionary: Iterable[str]):
@@ -51,7 +57,7 @@ def print_possible_matches(guesses: list[str], dictionary: Iterable[str]):
   for word in dictionary:
     if pat.fullmatch(word) and set(word).issuperset(also_require):
       num_matches += 1
-      print(word, end='\n' if num_matches % 10 == 0 else ' ')
+      print(word, end='\n' if num_matches % 13 == 0 else ' ')
   print("\nnum matches =", num_matches)
 
 def print_possible_matches_at_each_guess(guesses: list[str]):
@@ -61,6 +67,37 @@ def print_possible_matches_at_each_guess(guesses: list[str]):
     print(f'## {guesses[i-2]} ({guesses[i-1]})')
     print_possible_matches(guesses[:i], dictionary)
 
+def guess_result(guess: str, answer: str):
+  assert(len(guess) == 5 and len(answer) == 5)
+
+  result = ['.']*5
+  lcount = defaultdict(lambda: 0)
+  for i in range(5):
+    if guess[i] == answer[i]:
+      result[i] = 'g'
+    else:
+      lcount[answer[i]] += 1
+  for i in range(5):
+    if result[i] != '.':
+      continue
+    if lcount[guess[i]] > 0:
+      result[i] = 'y'
+      lcount[guess[i]] -= 1
+  return ''.join(result)
+
+def replay_with_possible_matches(guesses: list[str]):
+  annotated_guesses = []
+  for guess in guesses[:-1]:
+    annotated_guesses.append(guess)
+    annotated_guesses.append(guess_result(guess, guesses[-1]))
+  print_possible_matches_at_each_guess(annotated_guesses)
+
+def main(args):
+  if not args:
+    print_possible_matches_at_each_guess(GUESSES)
+  else:
+    replay_with_possible_matches(args)
 
 if __name__ == "__main__":
-  print_possible_matches_at_each_guess(GUESSES)
+  from sys import argv
+  main(argv[1:])
