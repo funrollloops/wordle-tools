@@ -73,7 +73,7 @@ def print_possible_matches(guesses: list[str], dictionary: Iterable[str]):
     if pat.fullmatch(word) and set(word).issuperset(also_require):
       num_matches += 1
       print(word, end='\n' if num_matches % 13 == 0 else ' ')
-  print("\nnum matches =", num_matches)
+  print(f"\n{num_matches} match{'es' if num_matches != 1 else ''}")
 
 def print_possible_matches_at_each_guess(guesses: list[str]):
   dictionary = list(load_dictionary())
