@@ -36,10 +36,21 @@ def show_annotated_guess(guess: str, result: str):
   print(s + '\033[0m')
 
 def load_dictionary() -> Iterable[str]:
+  w4 = set()
+  w3 = set()
   with open('/usr/share/dict/words') as f:
     for word in (l.strip() for l in f):
-      if isvalid(word):
+      if not word.isalpha() or not word.islower():
+        continue
+      if isvalid(word) and not (word.endswith('ed') and
+                                (word[:4] in w4 or word[:3] in w3)) and not (
+                                    word[-1] == 's' and word[:4] in w4):
         yield word
+      elif len(word) == 4:
+        w4.add(word)
+      elif len(word) == 3:
+        w3.add(word)
+
 
 def print_possible_matches(guesses: list[str], dictionary: Iterable[str]):
   not_in_word = set()
