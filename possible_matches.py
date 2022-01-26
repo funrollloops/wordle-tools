@@ -19,6 +19,18 @@ assert(all(len(g) == 5 for g in GUESSES))
 assert(all(map(isvalid, GUESSES[::2])))
 assert(len(GUESSES) % 2 == 0)
 
+def show_annotated_guess(guess: str, result: str) -> str:
+  #return f'## {guess} ({result})')
+  s = '\033[1;38;2;255;255;255m'
+  for c, r in zip(guess, result):
+    if r == 'g':
+      s += '\033[48;2;106;170;100m'
+    elif r == 'y':
+      s += '\033[48;2;201;180;88m'
+    else:
+      s += '\033[48;2;120;124;126m'
+    s += ' ' + c + ' '
+  print(s + '\033[0m')
 
 def load_dictionary() -> Iterable[str]:
   with open('/usr/share/dict/words') as f:
@@ -64,7 +76,7 @@ def print_possible_matches_at_each_guess(guesses: list[str]):
   dictionary = list(load_dictionary())
   for i in range(2, len(guesses) + 1, 2):
     if i>2: print()
-    print(f'## {guesses[i-2]} ({guesses[i-1]})')
+    show_annotated_guess(guesses[i-2], guesses[i-1])
     print_possible_matches(guesses[:i], dictionary)
 
 def guess_result(guess: str, answer: str):
