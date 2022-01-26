@@ -19,8 +19,11 @@ assert(all(len(g) == 5 for g in GUESSES))
 assert(all(map(isvalid, GUESSES[::2])))
 assert(len(GUESSES) % 2 == 0)
 
-def show_annotated_guess(guess: str, result: str) -> str:
-  #return f'## {guess} ({result})')
+def show_annotated_guess(guess: str, result: str):
+  from sys import stdout
+  if not stdout.isatty():
+    print(f'## {guess} ({result})')
+    return
   s = '\033[1;38;2;255;255;255m'
   for c, r in zip(guess, result):
     if r == 'g':
