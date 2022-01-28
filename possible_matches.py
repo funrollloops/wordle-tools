@@ -19,7 +19,7 @@ assert(all(len(g) == 5 for g in GUESSES))
 assert(all(map(isvalid, GUESSES[::2])))
 assert(len(GUESSES) % 2 == 0)
 
-def show_annotated_guess(guess: str, result: str):
+def print_annotated_guess(guess: str, result: str):
   from sys import stdout
   if not stdout.isatty():
     print(f'## {guess} ({result})')
@@ -90,7 +90,7 @@ def print_possible_matches_at_each_guess(guesses: list[str]):
   dictionary = list(load_dictionary())
   for i in range(2, len(guesses) + 1, 2):
     if i>2: print()
-    show_annotated_guess(guesses[i-2], guesses[i-1])
+    print_annotated_guess(guesses[i-2], guesses[i-1])
     print_possible_matches(guesses[:i], dictionary)
 
 def guess_result(guess: str, answer: str):
@@ -117,6 +117,8 @@ def replay_with_possible_matches(guesses: list[str]):
     annotated_guesses.append(guess)
     annotated_guesses.append(guess_result(guess, guesses[-1]))
   print_possible_matches_at_each_guess(annotated_guesses)
+  print()
+  print_annotated_guess(guesses[-1], 'g'*5)
 
 def main(args):
   if not args:
