@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 from collections import defaultdict
+import os
 import re
 
 words3 = set()
 words4 = set()
 words5 = set()
 
-with open('/usr/share/dict/words') as f:
+dir = os.path.dirname(__file__)
+path = os.path.join(dir, 'words.txt')
+with open(path) as f:
   for word in map(str.strip, f):
     if len(word) == 3:
       words3.add(word)

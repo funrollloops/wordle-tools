@@ -1,25 +1,16 @@
 #!/usr/bin/env python3
+# usage: ./possible_matches guess1 guess2 guess3 answer
 
+import os
 import re
 from collections import defaultdict
 from typing import Optional, Iterable
 
-# Guesses: word first, then five letters: y (yellow) or g (green).
-GUESSES = [
-  'arise',
-  'yy_y_',
-  'donut',
-  '___y_',
-]
-
 def isvalid(word: str) -> bool:
   return len(word) == 5 and word.isalpha() and word.islower()
 
-assert(all(len(g) == 5 for g in GUESSES))
-assert(all(map(isvalid, GUESSES[::2])))
-assert(len(GUESSES) % 2 == 0)
-
 def print_annotated_guess(guess: str, result: str):
+  """Pretty print an annotated guess."""
   from sys import stdout
   if not stdout.isatty():
     print(f'## {guess} ({result})')
@@ -35,7 +26,7 @@ def print_annotated_guess(guess: str, result: str):
     s += ' ' + c + ' '
   print(s + '\033[0m')
 
-def load_dictionary() -> Iterable[str]:
+def load_dictionary_approx() -> Iterable[str]:
   w4 = set()
   w3 = set()
   with open('/usr/share/dict/words') as f:
@@ -52,7 +43,19 @@ def load_dictionary() -> Iterable[str]:
         w3.add(word)
 
 
+def load_dictionary() -> Iterable[str]:
+  dir = os.path.dirname(__file__)
+  path = os.path.join(dir, 'words.txt')
+  with open(path) as f:
+    for word in f:
+      yield word.strip()
+
 def print_possible_matches(guesses: list[str], dictionary: Iterable[str]):
+  """Prints out the possible matches given a sequence of guesses+results.
+
+  guesses: alternating guess and result strings
+  dictionary: list of valid words
+  """
   not_in_word = set()
   in_word_pos_unknown = set()
   in_word_pos_known = set()
@@ -87,6 +90,10 @@ def print_possible_matches(guesses: list[str], dictionary: Iterable[str]):
   print(f"\n{num_matches} match{'es' if num_matches != 1 else ''}")
 
 def print_possible_matches_at_each_guess(guesses: list[str]):
+  """Prints out possible matches at each step of seqeunce of guesses.
+  guesses: alternating guesses and results
+  """
+
   dictionary = list(load_dictionary())
   for i in range(2, len(guesses) + 1, 2):
     if i>2: print()
@@ -94,6 +101,7 @@ def print_possible_matches_at_each_guess(guesses: list[str]):
     print_possible_matches(guesses[:i], dictionary)
 
 def guess_result(guess: str, answer: str):
+  """Generates a result string for guess: _ (gray), y (yellow), g(green)."""
   assert(len(guess) == 5 and len(answer) == 5)
 
   result = ['.']*5
@@ -112,6 +120,7 @@ def guess_result(guess: str, answer: str):
   return ''.join(result)
 
 def replay_with_possible_matches(guesses: list[str]):
+  """Prints possible matches at each step from unannotated guesses."""
   annotated_guesses = []
   for guess in guesses[:-1]:
     annotated_guesses.append(guess)
