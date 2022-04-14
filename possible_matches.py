@@ -86,7 +86,10 @@ def print_possible_matches(guesses: list[str], dictionary: Iterable[str]):
   for word in dictionary:
     if pat.fullmatch(word) and set(word).issuperset(also_require):
       num_matches += 1
-      print(word, end='\n' if num_matches % 13 == 0 else ' ')
+      if num_matches <= 13 * 5:
+        print(word, end='\n' if num_matches % 13 == 0 else ' ')
+      elif num_matches == 13 * 5 + 1:
+        print("…", end='')
   print(f"\n{num_matches} match{'es' if num_matches != 1 else ''}")
 
 def print_possible_matches_at_each_guess(guesses: list[str]):
@@ -128,6 +131,7 @@ def replay_with_possible_matches(guesses: list[str]):
   print_possible_matches_at_each_guess(annotated_guesses)
   print()
   print_annotated_guess(guesses[-1], 'g'*5)
+  print()
 
 def main(args):
   if not args:
