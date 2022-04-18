@@ -6,6 +6,13 @@ import re
 from collections import defaultdict
 from typing import Optional, Iterable
 
+from absl import app
+from absl import flags
+
+FLAGS = flags.FLAGS
+
+flags.DEFINE_bool('limit_matches', True, 'Truncate long lists of matches')
+
 def isvalid(word: str) -> bool:
   return len(word) == 5 and word.isalpha() and word.islower()
 
@@ -86,7 +93,7 @@ def print_possible_matches(guesses: list[str], dictionary: Iterable[str]):
   for word in dictionary:
     if pat.fullmatch(word) and set(word).issuperset(also_require):
       num_matches += 1
-      if num_matches <= 13 * 5:
+      if not FLAGS.limit_matches or num_matches <= 13 * 5:
         print(word, end='\n' if num_matches % 13 == 0 else ' ')
       elif num_matches == 13 * 5 + 1:
         print("…", end='')
@@ -133,12 +140,12 @@ def replay_with_possible_matches(guesses: list[str]):
   print_annotated_guess(guesses[-1], 'g'*5)
   print()
 
-def main(args):
+def main(argv):
+  args = argv[1:]
   if not args:
     print_possible_matches_at_each_guess(GUESSES)
   else:
     replay_with_possible_matches(args)
 
 if __name__ == "__main__":
-  from sys import argv
-  main(argv[1:])
+  app.run(main)
