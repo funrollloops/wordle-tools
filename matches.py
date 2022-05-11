@@ -81,8 +81,11 @@ class WordleConstraint:
       if chr not in self.positional_constraints[i]:
         return False
       lcount[chr] += 1
-    for chr, cnt in lcount.items():
-      if cnt > self.max[chr] or cnt < self.min[chr]:
+    for chr, min_cnt in self.min.items():
+      if lcount.get(chr, 0) < min_cnt:
+        return False
+    for chr, max_cnt in self.max.items():
+      if lcount.get(chr, 0) > max_cnt:
         return False
     return True
 
