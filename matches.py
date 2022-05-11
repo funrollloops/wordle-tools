@@ -10,7 +10,7 @@ from absl import flags
 
 FLAGS = flags.FLAGS
 
-flags.DEFINE_bool('limit_matches', True, 'Truncate long lists of matches')
+flags.DEFINE_bool('limit', True, 'Truncate long lists of matches')
 
 HINT_GREEN = 'g'
 HINT_YELLOW = 'y'
@@ -91,7 +91,7 @@ def print_matches(dictionary: Iterable[str], constraints: WordleConstraint):
   num_matches = 0
   for word in filter(constraints.match, dictionary):
     num_matches += 1
-    if not FLAGS.limit_matches or num_matches <= 13 * 5:
+    if not FLAGS.limit or num_matches <= 13 * 5:
       print(word, end='\n' if num_matches % 13 == 0 else ' ')
     elif num_matches == 13 * 5 + 1:
       print("…", end='')
