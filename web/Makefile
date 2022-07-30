@@ -1,3 +1,5 @@
+.PHONY: all clean
+
 all: words.js match.js
 
 words.ts: ../words.txt Makefile
@@ -9,3 +11,6 @@ words.ts: ../words.txt Makefile
 node_modules: package.json package-lock.json
 	npm install
 	touch node_modules
+
+clean:
+	rm *.js words.ts
