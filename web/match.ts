@@ -11,6 +11,39 @@ const HINT_YELLOW = 1;
 const HINT_GRAY = 0;
 const CHAR_CODE_A = "a".charCodeAt(0);
 
+const PACKED_WORDS: Uint32Array = (function () {
+  var buf = new Uint32Array(WORDS.length);
+  for (var i = 0; i < WORDS.length; i += 5) {
+    const input = WORDS.substring(i, i + 5);
+    const word = encode_word(input);
+    const decoded = decode_word(word);
+    assert(
+      decode_word(word) == input,
+      "round trip failed input:" + input + " output:" + decoded
+    );
+    buf[i] = word;
+  }
+  return buf;
+})();
+
+function decode_word(word: number): string {
+  return String.fromCharCode(
+    CHAR_CODE_A + (word & 0x1f),
+    CHAR_CODE_A + ((word >>> 5) & 0x1f),
+    CHAR_CODE_A + ((word >>> 10) & 0x1f),
+    CHAR_CODE_A + ((word >>> 15) & 0x1f),
+    CHAR_CODE_A + ((word >>> 20) & 0x1f)
+  );
+}
+
+function encode_word(word: string): number {
+  var encoded = 0 >>> 0;
+  for (var j = 0; j < 5; j++) {
+    encoded = encoded | ((word.charCodeAt(j) - CHAR_CODE_A) << (j * 5));
+  }
+  return encoded;
+}
+
 class Matcher {
   min = new Uint8Array(26);
   max = new Uint8Array(26);
@@ -56,14 +89,14 @@ class Matcher {
     }
   }
 
-  match(this: Matcher, word: string): boolean {
-    assert(word.length == 5, "word must have len 5");
+  match(this: Matcher, word: number): boolean {
     var local_count = this.local_min;
     local_count.fill(0);
     for (var i = 0; i < 5; ++i) {
-      const chr = word.charCodeAt(i) - CHAR_CODE_A;
+      const chr = word & 0x1f;
       if (this.disallowed_at[i] & (1 << chr)) return false;
       local_count[chr] += 1; // Count occurrences of character.
+      word = word >>> 5;
     }
     // Check non-positional character count constraints.
     for (var chr = 0; chr < 26; ++chr)
@@ -83,16 +116,14 @@ function print_annotated_guess(guess: string, result: Uint8Array) {
   }
   console.log(s + "\x1b[0m");
 }
-
-function print_matches(words: string, matcher: Matcher, limit: boolean = true) {
+function print_matches(matcher: Matcher, limit: boolean) {
   var num_matches = 0;
   var line = "";
-  for (var i = 0; i < words.length; i += 5) {
-    const word = words.substring(i, i + 5);
-    if (!matcher.match(word)) continue;
+  for (var i = 0; i < PACKED_WORDS.length; i++) {
+    if (!matcher.match(PACKED_WORDS[i])) continue;
     num_matches += 1;
     if (!limit || num_matches <= 13 * 5) {
-      line += word;
+      line += decode_word(PACKED_WORDS[i]);
       if (num_matches % 13 == 0) {
         console.log(line);
         line = "";
@@ -135,7 +166,7 @@ function replay_with_answer(guesses: Array<string>) {
     const hint = generate_hint(guess, answer);
     print_annotated_guess(guess, hint);
     m.update(guess, hint);
-    print_matches(WORDS, m);
+    print_matches(m, true);
     console.log();
   });
   print_annotated_guess(answer, generate_hint(answer, answer));
