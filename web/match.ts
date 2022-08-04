@@ -83,15 +83,16 @@ class Matcher {
     var local_count = this.local_min;
     local_count.fill(0);
     for (var i = 0; i < 5; ++i) {
-      const chr = word & 0x1f;
+      const chr = (word >>> (i * 5)) & 0x1f;
       if (this.disallowed_at[i] & (1 << chr)) return false;
       local_count[chr] += 1; // Count occurrences of character.
-      word = word >>> 5;
     }
     // Check non-positional character count constraints.
-    for (var chr = 0; chr < 26; ++chr)
+    for (var i = 0; i < 5; ++i) {
+      const chr = (word >>> (i * 5)) & 0x1f;
       if (local_count[chr] < this.min[chr] || local_count[chr] > this.max[chr])
         return false;
+    }
     return true;
   }
 }
