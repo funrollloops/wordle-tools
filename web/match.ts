@@ -12,16 +12,14 @@ const HINT_GRAY = 0;
 const CHAR_CODE_A = "a".charCodeAt(0);
 
 const PACKED_WORDS: Uint32Array = (function () {
-  var buf = new Uint32Array(WORDS.length);
-  for (var i = 0; i < WORDS.length; i += 5) {
-    const input = WORDS.substring(i, i + 5);
-    const word = encode_word(input);
-    const decoded = decode_word(word);
-    assert(
-      decode_word(word) == input,
-      "round trip failed input:" + input + " output:" + decoded
-    );
-    buf[i] = word;
+  var buf = new Uint32Array(WORDS.length / 5);
+  for (var wi = 0, bi = 0; wi < WORDS.length; wi += 5, bi++) {
+    buf[bi] =
+      ((WORDS.charCodeAt(wi) - CHAR_CODE_A) << 0) |
+      ((WORDS.charCodeAt(wi + 1) - CHAR_CODE_A) << 5) |
+      ((WORDS.charCodeAt(wi + 2) - CHAR_CODE_A) << 10) |
+      ((WORDS.charCodeAt(wi + 3) - CHAR_CODE_A) << 15) |
+      ((WORDS.charCodeAt(wi + 4) - CHAR_CODE_A) << 20);
   }
   return buf;
 })();
@@ -34,14 +32,6 @@ function decode_word(word: number): string {
     CHAR_CODE_A + ((word >>> 15) & 0x1f),
     CHAR_CODE_A + ((word >>> 20) & 0x1f)
   );
-}
-
-function encode_word(word: string): number {
-  var encoded = 0 >>> 0;
-  for (var j = 0; j < 5; j++) {
-    encoded = encoded | ((word.charCodeAt(j) - CHAR_CODE_A) << (j * 5));
-  }
-  return encoded;
 }
 
 class Matcher {
