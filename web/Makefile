@@ -2,6 +2,8 @@
 
 all: words.js match.js
 
+match.js: words.ts
+
 words.ts: ../words.txt Makefile
 	(echo 'export const WORDS="'; cat "$<"; echo '";') | tr -d '\n' > $@
 
